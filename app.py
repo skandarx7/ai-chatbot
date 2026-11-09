@@ -1,46 +1,62 @@
-kimport requests
-import json
+import os
+import base64
+import requests
+from flask import Flask, request, jsonify, render_template
 
-# First API call with reasoning
-response = requests.post(
-  url="https://openrouter.ai/api/v1/chat/completions",
-  headers={
-    "Authorization": "Bearer <OPENROUTER_API_KEY>",
-    "Content-Type": "application/json",
-  },
-  data=json.dumps({
-    "model": "dots-studio/dots-3-note-preview:free",
-    "messages": [
-        {
-          "role": "user",
-          "content": "How many r's are in the word 'strawberry'?"
-        }
-      ],
-    "reasoning": {"enabled": True}
-  })
-)
+API_KEY = os.environ["OPENROUTER_API_KEY"]
+MODEL = "openai/gpt-4o-mini"  # Image support wala model hona chahiye
+URL = "https://openrouter.ai/api/v1/chat/completions"
 
-# Extract the assistant message with reasoning_details
-response = response.json()
-response = response['choices'][0]['message']
+SYSTEM_PROMPT = """Tum ek madadgar AI assistant ho.
+Sawal ka seedha aur sahi jawab do.
+Agar image bheji gayi ho to usay dekh kar jawab do.
+Jawab Roman English mein do."""
 
-# Preserve the assistant message with reasoning_details
-messages = [
-  {"role": "user", "content": "How many r's are in the word 'strawberry'?"},
-  {
-    "role": "assistant",
-    "content": response.get('content'),
-    "reasoning_details": response.get('reasoning_details')  # Pass back unmodified
-  },
-  {"role": "user", "content": "Are you sure? Think carefully."}
-]
+app = Flask(__name__)
 
-# Second API call - model continues reasoning from where it left off
-response2 = requests.post(
-  url="https://openrouter.ai/api/v1/chat/completions",
-  data=json.dumps({
-    "model": "dots-studio/dots-3-note-preview:free",
-    "messages": messages,  # Includes preserved reasoning_details
-    "reasoning": {"enabled": True}
-  })
-)
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+
+@app.route("/chat", methods=["POST"])
+def chat():
+    question = request.form.get("question", "").strip()
+    image = request.files.get("image")
+
+    content = []
+    if question:
+        content.append({"type": "text", "text": question})
+    if image and image.filename:
+        image_bytes = image.read()
+        b64 = base64.b64encode(image_bytes).decode("utf-8")
+        content.append({
+            "type": "image_url",
+            "image_url": {"url": f"data:{image.mimetype};base64,{b64}"},
+        })
+
+    if not content:
+        return jsonify({"error": "Sawal likhein ya image bhejein."}), 400
+
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": content},
+    ]
+
+    response = requests.post(
+        URL,
+        headers={"Authorization": f"Bearer {API_KEY}"},
+        json={"model": MODEL, "messages": messages},
+        timeout=90,
+    )
+
+    if response.status_code != 200:
+        return jsonify({"error": response.text}), response.status_code
+
+    answer = response.json()["choices"][0]["message"]["content"]
+    return jsonify({"answer": answer})
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
