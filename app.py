@@ -4,7 +4,7 @@ import requests
 from flask import Flask, request, jsonify, render_template
 
 API_KEY = os.environ.get("OPENROUTER_API_KEY", "").strip()
-MODEL = "openai/gpt-4o-mini"  # Image support wala model hona chahiye
+MODEL = "google/gemma-4-31b-it:free"  # Image support wala model hona chahiye
 URL = "https://openrouter.ai/api/v1/chat/completions"
 
 SYSTEM_PROMPT = """Tum ek madadgar AI assistant ho.
