@@ -3,7 +3,7 @@ import base64
 import requests
 from flask import Flask, request, jsonify, render_template
 
-API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
+API_KEY = os.environ.get("OPENROUTER_API_KEY", "").strip()
 MODEL = "openai/gpt-4o-mini"  # Image support wala model hona chahiye
 URL = "https://openrouter.ai/api/v1/chat/completions"
 
