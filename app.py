@@ -3,7 +3,7 @@ import base64
 import requests
 from flask import Flask, request, jsonify, render_template
 
-API_KEY = os.environ["OPENROUTER_API_KEY"]
+API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 MODEL = "openai/gpt-4o-mini"  # Image support wala model hona chahiye
 URL = "https://openrouter.ai/api/v1/chat/completions"
 
@@ -22,6 +22,8 @@ def index():
 
 @app.route("/chat", methods=["POST"])
 def chat():
+    if not API_KEY:
+        return jsonify({"error": "OPENROUTER_API_KEY Vercel par set nahi hai."}), 500
     question = request.form.get("question", "").strip()
     image = request.files.get("image")
 
