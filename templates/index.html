@@ -129,9 +129,15 @@
 
       try {
         const res = await fetch("/chat", { method: "POST", body: data });
-        const json = await res.json();
+        const text = await res.text();
+        let json;
+        try {
+          json = JSON.parse(text);
+        } catch (err) {
+          json = { error: "Status " + res.status + ": " + text.slice(0, 300) };
+        }
         thinking.remove();
-        addMessage(res.ok ? json.answer : "Error: " + json.error, "bot");
+        addMessage(res.ok && json.answer ? json.answer : "Error: " + (json.error || "unknown"), "bot");
       } catch (err) {
         thinking.remove();
         addMessage("Network error: " + err, "bot");
