@@ -24,7 +24,7 @@ def chat():
     user_input = request.form.get("prompt", "")
     
     payload = {
-        "model": "deepseek/deepseek-r1:free",
+        "model": "openrouter/auto",
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_input}
