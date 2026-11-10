@@ -25,7 +25,7 @@ def chat():
     user_input = request.form.get("prompt", "")
     
     payload = {
-        "model": "meta-llama/llama-3.2-11b-vision-instruct:free",
+        "model": "google/gemma-2-9b-it:free",
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_input}
