@@ -23,7 +23,7 @@ def chat():
     user_input = request.form.get("prompt", "")
 
     payload = {
-        "model": "llama-3.3-70b-versatile",
+        "model": "llama-3.1-8b-instant",
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_input}
