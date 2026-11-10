@@ -1,4 +1,4 @@
-import os
+kimport os
 import base64
 import requests
 from flask import Flask, request, jsonify, render_template
@@ -25,7 +25,7 @@ def chat():
     user_input = request.form.get("prompt", "")
     
     payload = {
-        "model": "google/gemma-2-9b-it:free",
+        "model": "deepseek/deepseek-r1:free",
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_input}
