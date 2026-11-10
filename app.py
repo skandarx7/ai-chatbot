@@ -4,8 +4,8 @@ from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__)
 
-API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
-URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key={API_KEY}"
+API_KEY = os.environ.get("GROQ_API_KEY", "").strip()
+URL = "https://api.groq.com/openai/v1/chat/completions"
 
 SYSTEM_PROMPT = """Tum ek madadgar AI assistant ho.
 Sawal ka seedha aur sahi jawab do.
@@ -18,37 +18,31 @@ def index():
 @app.route("/chat", methods=["POST"])
 def chat():
     if not API_KEY:
-        return jsonify({"error": "GEMINI_API_KEY set nahi hai."}), 500
+        return jsonify({"error": "GROQ_API_KEY set nahi hai."}), 500
 
     user_input = request.form.get("prompt", "")
 
     payload = {
-        "system_instruction": {
-            "parts": [{"text": SYSTEM_PROMPT}]
-        },
-        "contents": [
-            {
-                "parts": [{"text": user_input}]
-            }
+        "model": "llama-3.3-70b-versatile",
+        "messages": [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": user_input}
         ]
     }
 
     headers = {
+        "Authorization": f"Bearer {API_KEY}",
         "Content-Type": "application/json"
     }
 
     try:
         response = requests.post(URL, headers=headers, json=payload)
         data = response.json()
-        
         if response.status_code == 200:
-            answer = data["candidates"][0]["content"]["parts"][0]["text"]
+            answer = data["choices"][0]["message"]["content"]
             return jsonify({"answer": answer})
-        elif response.status_code == 503:
-            return jsonify({"error": "Google server par abhi bohot rush hai (503). Kindly 10 seconds baad dobara Send dabayein!"}), 503
         else:
             return jsonify({"error": data}), response.status_code
-            
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
