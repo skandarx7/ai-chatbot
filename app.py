@@ -4,12 +4,11 @@ from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__)
 
-API_KEY = os.environ.get("OPENROUTER_API_KEY", "").strip()
-URL = "https://openrouter.ai/api/v1/chat/completions"
+API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
+URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={API_KEY}"
 
 SYSTEM_PROMPT = """Tum ek madadgar AI assistant ho.
 Sawal ka seedha aur sahi jawab do.
-Agar image bheji gayi ho to usay dekh kar jawab do.
 Jawab Roman English mein do."""
 
 @app.route("/")
@@ -19,23 +18,22 @@ def index():
 @app.route("/chat", methods=["POST"])
 def chat():
     if not API_KEY:
-        return jsonify({"error": "OPENROUTER_API_KEY set nahi hai."}), 500
+        return jsonify({"error": "GEMINI_API_KEY set nahi hai."}), 500
 
     user_input = request.form.get("prompt", "")
-    
+
     payload = {
-        "model": "openrouter/auto",
-        "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_input}
-        ],
-        "provider": {
-            "allow_fallbacks": True
-        }
+        "system_instruction": {
+            "parts": [{"text": SYSTEM_PROMPT}]
+        },
+        "contents": [
+            {
+                "parts": [{"text": user_input}]
+            }
+        ]
     }
 
     headers = {
-        "Authorization": f"Bearer {API_KEY}",
         "Content-Type": "application/json"
     }
 
@@ -43,7 +41,7 @@ def chat():
         response = requests.post(URL, headers=headers, json=payload)
         data = response.json()
         if response.status_code == 200:
-            answer = data["choices"][0]["message"]["content"]
+            answer = data["candidates"][0]["content"]["parts"][0]["text"]
             return jsonify({"answer": answer})
         else:
             return jsonify({"error": data}), response.status_code
