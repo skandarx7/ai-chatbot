@@ -4,8 +4,8 @@ from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__)
 
-API_KEY = os.environ.get("GROQ_API_KEY", "").strip()
-URL = "https://api.groq.com/openai/v1/chat/completions"
+API_KEY = os.environ.get("COHERE_API_KEY", "").strip()
+URL = "https://api.cohere.com/v1/chat"
 
 SYSTEM_PROMPT = """Tum ek madadgar AI assistant ho.
 Sawal ka seedha aur sahi jawab do.
@@ -18,16 +18,14 @@ def index():
 @app.route("/chat", methods=["POST"])
 def chat():
     if not API_KEY:
-        return jsonify({"error": "GROQ_API_KEY set nahi hai."}), 500
+        return jsonify({"error": "COHERE_API_KEY set nahi hai."}), 500
 
     user_input = request.form.get("prompt", "")
 
     payload = {
-        "model": "llama-3.2-3b-preview",
-        "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_input}
-        ]
+        "model": "command-a-03-2025",
+        "message": user_input,
+        "preamble": SYSTEM_PROMPT
     }
 
     headers = {
@@ -39,7 +37,7 @@ def chat():
         response = requests.post(URL, headers=headers, json=payload)
         data = response.json()
         if response.status_code == 200:
-            answer = data["choices"][0]["message"]["content"]
+            answer = data["text"]
             return jsonify({"answer": answer})
         else:
             return jsonify({"error": data}), response.status_code
