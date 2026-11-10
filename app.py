@@ -5,8 +5,7 @@ from flask import Flask, request, jsonify, render_template
 app = Flask(__name__)
 
 API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
-URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={API_KEY}"
-
+URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={API_KEY}"
 SYSTEM_PROMPT = """Tum ek madadgar AI assistant ho.
 Sawal ka seedha aur sahi jawab do.
 Jawab Roman English mein do."""
