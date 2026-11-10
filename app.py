@@ -40,11 +40,15 @@ def chat():
     try:
         response = requests.post(URL, headers=headers, json=payload)
         data = response.json()
+        
         if response.status_code == 200:
             answer = data["candidates"][0]["content"]["parts"][0]["text"]
             return jsonify({"answer": answer})
+        elif response.status_code == 503:
+            return jsonify({"error": "Google server par abhi bohot rush hai (503). Kindly 10 seconds baad dobara Send dabayein!"}), 503
         else:
             return jsonify({"error": data}), response.status_code
+            
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
