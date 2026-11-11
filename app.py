@@ -7,9 +7,8 @@ app = Flask(__name__)
 API_KEY = os.environ.get("COHERE_API_KEY", "").strip()
 URL = "https://api.cohere.com/v1/chat"
 
-SYSTEM_PROMPT = """Tum ek madadgar AI assistant ho.
-Sawal ka seedha aur sahi jawab do.
-Jawab Roman English mein do."""
+SYSTEM_PROMPT = """Tum ek madadgar AI assistant ho. 
+Sawal ka seedha aur sahi jawab do. Jawab Roman English mein do."""
 
 @app.route("/")
 def index():
